@@ -1,0 +1,15 @@
+[source]
+repository = "ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table"
+branch = "main"
+database_path = "tag.sqlite"
+timeout_seconds = 60.0
+maximum_download_bytes = 67108864
+
+[validation]
+minimum_records = 100000
+maximum_record_decrease_ratio = 0.05
+maximum_translation_change_ratio = 0.10
+
+[output]
+directory = "local-dist"
+report_directory = "reports"
