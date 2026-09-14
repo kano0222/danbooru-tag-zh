@@ -1,53 +1,61 @@
 # danbooru-tag-zh
 
-将 [`ffdkj-Danbooru_Tag-Chinese-English-Translation-Table`](https://github.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table)
-中的 `tag.sqlite` 转换为适合网页使用的简体中文标签 JSON。转换过程保留上游有效翻译，并排除中文值与原始 tag 完全相同的记录；不读取 Danbooru Wiki，不调用大模型，也不需要 API Key。
+[English](https://github.com/kano0222/danbooru-tag-zh/blob/main/README.md)
 
-## 本地使用
+从 Danbooru 官方接口获取标签，并为 Danbooru Masonry 等网页客户端生成简体中文标签文件。
 
-安装 [uv](https://docs.astral.sh/uv/) 和 Python 3.12，然后执行：
+<img src="https://count.getloli.com/@danbooru-tag-zh?theme=moebooru" alt="Moe Counter">
+
+## 数据集
+
+| 数据集 | 内容 | 状态 |
+| --- | --- | --- |
+| `ffdkj` | 从 ffdkj `tag.sqlite` 转换的译名 | 可用 |
+| `wiki-reviewed` | 来自 Danbooru Wiki、Wikipedia 标题和本地审核的译名 | 本地预览 |
+
+两个文件分开生成。两者都排除 `artist`，删除与原 tag 相同的译名，并将全角括号替换为英文括号。
+
+## 标签范围
+
+标签清单包含 Danbooru 五个分类中 `post_count >= 10` 的标签。`general`、`copyright`、`character` 和 `meta` 参与翻译，`artist` 只保留标签数据。
+
+译名尽可能简短并记录来源；无法确定的内容不写入结果。
+
+## 快速开始
+
+安装 [uv](https://docs.astral.sh/uv/) 和 Python 3.12：
 
 ```powershell
 uv sync --frozen
-uv run danbooru-tag-zh update
 ```
 
-`update` 会先把 `main` 解析为固定 commit，再下载和校验 SQLite。生成结果写入被 Git 忽略的 `local-dist/`：
-
-- `zh-hans.min.json`：完整的 `英文标签 → 中文翻译` 映射。
-- `tags.zh-hans.json.gz`：保留分类和帖子数的完整审计数据。
-- `manifest.json`：上游 commit、SQLite SHA-256、记录数及产物哈希。
-
-过滤仅使用精确比较 `cn_name == name`，不会把大小写不同或下划线替换为空格的值视为相同。
-
-差异报告写入 `reports/update-diff.json`。
-
-指定上游 commit 可以复现一次更新：
+更新 ffdkj 数据并生成产物：
 
 ```powershell
-uv run danbooru-tag-zh update --commit <40位commit SHA>
+uv run danbooru-tag-zh update-ffdkj
+uv run danbooru-tag-zh build-artifacts --dataset ffdkj
+uv run danbooru-tag-zh validate-artifacts --dataset ffdkj
 ```
 
-也可以转换已经下载的文件：
+维护 Wiki 审核数据：
 
 ```powershell
-uv run danbooru-tag-zh update --source D:\Downloads\tag.sqlite
+uv run danbooru-tag-zh sync-tags
+uv run danbooru-tag-zh sync-wiki
+uv run danbooru-tag-zh sync-wikipedia
+uv run danbooru-tag-zh build-candidates
+uv run danbooru-tag-zh review
 ```
 
-只检查而不覆盖产物：
+## 文档
 
-```powershell
-uv run danbooru-tag-zh update --dry-run
-```
+- [数据获取与候选生成](docs/pipeline.zh-CN.md)
+- [人工审核指南](docs/review-guide.zh-CN.md)
+- [产物生成与维护](docs/artifacts.zh-CN.md)
 
-验证当前产物或查看统计：
+## 致谢
 
-```powershell
-uv run danbooru-tag-zh validate
-uv run danbooru-tag-zh stats
-```
-
-当记录数下降、翻译批量变化或分类消失超过保护阈值时，更新会停止。检查差异后可显式使用 `--accept-large-change`。
+感谢 [`ffdkj-Danbooru_Tag-Chinese-English-Translation-Table`](https://github.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table) 的作者允许本项目使用相关数据。
 
 ## 开发检查
 
@@ -58,6 +66,4 @@ uv run mypy
 uv run pytest
 ```
 
-## 数据授权
-
-代码使用 MIT 许可证。上游仓库目前没有明确的数据许可证，因此本工具将产物标记为 `unconfirmed-local-only` 并保持在 Git 忽略目录中。确认复制和再分发授权前，不应提交或公开发布转换结果。详情见 [DATA_LICENSE.md](DATA_LICENSE.md)。
+项目代码使用 MIT 许可证。

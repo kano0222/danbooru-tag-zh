@@ -11,7 +11,14 @@ from .helpers import make_database
 
 
 def config(maximum_download_bytes=1024 * 1024) -> SourceConfig:
-    return SourceConfig("owner/repo", "main", "tag.sqlite", 10, maximum_download_bytes)
+    return SourceConfig(
+        "owner/repo",
+        "main",
+        "tag.sqlite",
+        "data/sources/ffdkj.lock.json",
+        10,
+        maximum_download_bytes,
+    )
 
 
 def test_raw_url_is_pinned_to_commit():

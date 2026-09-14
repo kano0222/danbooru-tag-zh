@@ -5,8 +5,10 @@ __pycache__/
 .ruff_cache/
 *.py[cod]
 .cache/
+data/state/
 dist/
 local-dist/
 *.log
 *.tmp
 reports/
+artifacts/wiki-reviewed/*.json

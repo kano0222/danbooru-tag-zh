@@ -1,11 +1,13 @@
 [project]
 name = "danbooru-tag-zh"
 version = "0.1.0"
-description = "Local converter for the ffdkj Danbooru tag translation database"
+description = "Build a traceable Simplified Chinese translation dataset for Danbooru tags"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
-dependencies = []
+dependencies = [
+    "opencc>=1.4.2",
+]
 
 [project.scripts]
 danbooru-tag-zh = "danbooru_tag_zh.cli:main"

@@ -1,0 +1,46 @@
+name: Build ffdkj translation artifact
+
+on:
+  workflow_dispatch:
+    inputs:
+      ffdkj_commit:
+        description: Optional ffdkj commit; leave empty to use its latest main commit
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.10"
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: uv sync --frozen
+      - name: Resolve and validate ffdkj source
+        shell: bash
+        env:
+          FFDKJ_COMMIT: ${{ inputs.ffdkj_commit }}
+        run: |
+          if [[ -n "$FFDKJ_COMMIT" ]]; then
+            uv run danbooru-tag-zh update-ffdkj --commit "$FFDKJ_COMMIT"
+          else
+            uv run danbooru-tag-zh update-ffdkj
+          fi
+      - run: uv run danbooru-tag-zh build-artifacts --dataset ffdkj --accept-large-change
+      - run: uv run danbooru-tag-zh validate-artifacts --dataset ffdkj
+      - uses: actions/upload-artifact@v4
+        with:
+          name: danbooru-tag-zh-datasets
+          if-no-files-found: error
+          path: |
+            artifacts/ffdkj/zh-hans.min.json
+            artifacts/ffdkj/manifest.json
+            data/sources/ffdkj.lock.json

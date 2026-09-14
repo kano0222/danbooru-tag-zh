@@ -12,6 +12,29 @@ CATEGORY_NAMES = {
 
 
 @dataclass(frozen=True, slots=True)
+class Tag:
+    id: int
+    name: str
+    category: int
+    post_count: int
+    created_at: str
+    updated_at: str
+    is_deprecated: bool
+
+
+@dataclass(frozen=True, slots=True)
+class WikiPage:
+    id: int
+    title: str
+    body: str
+    other_names: tuple[str, ...]
+    created_at: str
+    updated_at: str
+    is_locked: bool
+    is_deleted: bool
+
+
+@dataclass(frozen=True, slots=True)
 class TagRecord:
     name: str
     category: int

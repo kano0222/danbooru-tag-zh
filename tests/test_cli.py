@@ -2,54 +2,53 @@ from __future__ import annotations
 
 import json
 
-from danbooru_tag_zh.cli import parser, run
+import pytest
 
-from .helpers import make_database
+from danbooru_tag_zh import cli
+from danbooru_tag_zh.datasets import _dataset_files, write_files
+from danbooru_tag_zh.models import Tag
+from danbooru_tag_zh.storage import open_database, write_tags
 
-
-def make_root(tmp_path):
-    (tmp_path / "config").mkdir()
-    (tmp_path / "config/default.toml").write_text(
-        """
-[source]
-repository = "owner/repo"
-branch = "main"
-database_path = "tag.sqlite"
-timeout_seconds = 10.0
-maximum_download_bytes = 1048576
-[validation]
-minimum_records = 1
-maximum_record_decrease_ratio = 0.05
-maximum_translation_change_ratio = 0.10
-[output]
-directory = "local-dist"
-report_directory = "reports"
-""".strip(),
-        encoding="utf-8",
-    )
-    return tmp_path
+from .helpers import make_root
 
 
-def test_dry_run_does_not_write_outputs(tmp_path):
+@pytest.mark.parametrize("command", ["tag-stats", "validate-tags"])
+def test_local_commands_report_database(tmp_path, command, capsys):
+    root = make_root(tmp_path, minimum_records=1)
+    path = root / "data/state/tags.sqlite"
+    connection = open_database(path)
+    with connection:
+        write_tags(
+            connection,
+            [
+                Tag(1, "general", 0, 10, "created", "updated", False),
+                Tag(2, "artist", 1, 10, "created", "updated", False),
+                Tag(3, "copyright", 3, 10, "created", "updated", False),
+                Tag(4, "character", 4, 10, "created", "updated", False),
+                Tag(5, "meta", 5, 10, "created", "updated", False),
+            ],
+        )
+    connection.close()
+
+    assert cli.run(cli.parser().parse_args([command, "--root", str(root)])) == 0
+    assert json.loads(capsys.readouterr().out)["total"] == 5
+
+
+@pytest.mark.parametrize("command", ["validate-artifacts", "artifact-stats"])
+def test_artifact_commands_handle_both_datasets(tmp_path, command, capsys):
     root = make_root(tmp_path)
-    source = make_database(tmp_path / "tag.sqlite", [("tag", 0, "翻译", 1)])
-    args = parser().parse_args(
-        ["update", "--root", str(root), "--source", str(source), "--dry-run"]
-    )
+    for dataset in ("ffdkj", "wiki-reviewed"):
+        write_files(
+            root / "artifacts" / dataset,
+            _dataset_files(
+                dataset,
+                {"long_hair": "长发"},
+                {"method": "test"},
+                {"total": 1},
+                generated_at="2026-01-01T00:00:00Z",
+            ),
+        )
 
-    assert run(args) == 0
-    assert not (root / "local-dist").exists()
-    assert not (root / "reports").exists()
-
-
-def test_update_validate_and_stats(tmp_path):
-    root = make_root(tmp_path)
-    source = make_database(tmp_path / "tag.sqlite", [("tag", 0, "翻译", 1)])
-
-    assert run(parser().parse_args(["update", "--root", str(root), "--source", str(source)])) == 0
-    assert run(parser().parse_args(["validate", "--root", str(root)])) == 0
-    assert run(parser().parse_args(["stats", "--root", str(root)])) == 0
-    assert (root / "reports/update-diff.json").exists()
-    report = json.loads((root / "reports/update-diff.json").read_text(encoding="utf-8"))
-    assert report["previous_commit"] is None
-    assert report["current_commit"] == "local"
+    assert cli.run(cli.parser().parse_args([command, "--root", str(root)])) == 0
+    output = json.loads(capsys.readouterr().out)
+    assert set(output) == {"ffdkj", "wiki-reviewed"}

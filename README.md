@@ -1,59 +1,59 @@
 # danbooru-tag-zh
 
-Converts `tag.sqlite` from
-[`ffdkj-Danbooru_Tag-Chinese-English-Translation-Table`](https://github.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table)
-into Simplified Chinese tag JSON suitable for web clients. The conversion preserves upstream
-translations unchanged except for excluding rows whose Chinese value exactly equals the original
-tag. It does not query the Danbooru Wiki, call an LLM, or require API keys.
+[简体中文](https://github.com/kano0222/danbooru-tag-zh/blob/main/README.zh-CN.md)
 
-## Local usage
+Fetches Danbooru tags and builds Simplified Chinese tag files for web clients such as Danbooru Masonry.
 
-Install [uv](https://docs.astral.sh/uv/) and Python 3.12, then run:
+## Datasets
+
+| Dataset | Contents | Status |
+| --- | --- | --- |
+| `ffdkj` | Translations converted from ffdkj `tag.sqlite` | Available |
+| `wiki-reviewed` | Names from Danbooru Wiki, Wikipedia titles, and local review | Local preview |
+
+The two files remain separate. Both exclude `artist`, omit values equal to the original tag, and replace fullwidth parentheses with ASCII parentheses.
+
+## Tag scope
+
+The inventory contains Danbooru tags with `post_count >= 10` from all five categories. `general`, `copyright`, `character`, and `meta` are translation targets. `artist` is retained only as tag data.
+
+Translations are kept short and record their source. Entries without a clear translation are omitted.
+
+## Quick start
+
+Install [uv](https://docs.astral.sh/uv/) and Python 3.12:
 
 ```powershell
 uv sync --frozen
-uv run danbooru-tag-zh update
 ```
 
-`update` resolves `main` to an immutable commit before downloading and validating the SQLite file.
-It writes Git-ignored artifacts to `local-dist/`:
-
-- `zh-hans.min.json`: complete `English tag → Chinese translation` map.
-- `tags.zh-hans.json.gz`: complete audit data including category and post count.
-- `manifest.json`: upstream commit, SQLite SHA-256, record counts, and artifact hashes.
-
-The filter uses the exact comparison `cn_name == name`; case-only differences and underscore-to-
-space values are retained.
-
-The update comparison is written to `reports/update-diff.json`.
-
-Rebuild from a fixed upstream commit:
+Update the ffdkj source and build its artifact:
 
 ```powershell
-uv run danbooru-tag-zh update --commit <40-character commit SHA>
+uv run danbooru-tag-zh update-ffdkj
+uv run danbooru-tag-zh build-artifacts --dataset ffdkj
+uv run danbooru-tag-zh validate-artifacts --dataset ffdkj
 ```
 
-Convert an existing local database:
+To work on the Wiki-reviewed dataset:
 
 ```powershell
-uv run danbooru-tag-zh update --source D:\Downloads\tag.sqlite
+uv run danbooru-tag-zh sync-tags
+uv run danbooru-tag-zh sync-wiki
+uv run danbooru-tag-zh sync-wikipedia
+uv run danbooru-tag-zh build-candidates
+uv run danbooru-tag-zh review
 ```
 
-Validate without replacing artifacts:
+## Documentation
 
-```powershell
-uv run danbooru-tag-zh update --dry-run
-```
+- [Data collection and candidate pipeline](docs/pipeline.md)
+- [Manual review guide](docs/review-guide.md)
+- [Artifact building and maintenance](docs/artifacts.md)
 
-Validate current artifacts or show counts:
+## Credits
 
-```powershell
-uv run danbooru-tag-zh validate
-uv run danbooru-tag-zh stats
-```
-
-The update stops when record removal, translation changes, or disappearing categories exceed the
-configured safeguards. Inspect the change before explicitly using `--accept-large-change`.
+Thanks to the author of [`ffdkj-Danbooru_Tag-Chinese-English-Translation-Table`](https://github.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table) for allowing this project to use relevant data.
 
 ## Development checks
 
@@ -64,9 +64,4 @@ uv run mypy
 uv run pytest
 ```
 
-## Data permission
-
-The converter code is MIT licensed. The upstream repository currently has no explicit data license,
-so generated artifacts are marked `unconfirmed-local-only` and remain in Git-ignored directories.
-Do not commit or publicly redistribute them until copying and redistribution permission is confirmed.
-See [DATA_LICENSE.md](DATA_LICENSE.md).
+The project code is MIT licensed.
