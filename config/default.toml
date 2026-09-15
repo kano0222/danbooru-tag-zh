@@ -38,5 +38,5 @@ manual_decisions_path = "data/manual/translations.json"
 
 [validation]
 minimum_records = 100000
-maximum_record_decrease_ratio = 0.05
-maximum_translation_change_ratio = 0.10
+maximum_record_decrease_ratio = 0.005
+maximum_translation_change_ratio = 0.01

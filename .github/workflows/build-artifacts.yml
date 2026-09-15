@@ -1,21 +1,25 @@
-name: Build ffdkj translation artifact
+name: Update ffdkj translations
 
 on:
+  schedule:
+    - cron: "17 20 * * *"
   workflow_dispatch:
-    inputs:
-      ffdkj_commit:
-        description: Optional ffdkj commit; leave empty to use its latest main commit
-        required: false
-        type: string
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: ffdkj-publish
+  cancel-in-progress: false
 
 jobs:
-  build:
+  update:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: astral-sh/setup-uv@v6
         with:
           version: "0.12.10"
@@ -24,23 +28,36 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync --frozen
-      - name: Resolve and validate ffdkj source
+      - name: Record published baseline
+        id: baseline
+        run: echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Prepare validated candidate
+        id: candidate
         shell: bash
-        env:
-          FFDKJ_COMMIT: ${{ inputs.ffdkj_commit }}
         run: |
-          if [[ -n "$FFDKJ_COMMIT" ]]; then
-            uv run danbooru-tag-zh update-ffdkj --commit "$FFDKJ_COMMIT"
+          set -euo pipefail
+          uv run danbooru-tag-zh prepare-ffdkj-update
+          if git diff --quiet -- artifacts/ffdkj/zh-hans.min.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           else
-            uv run danbooru-tag-zh update-ffdkj
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
-      - run: uv run danbooru-tag-zh build-artifacts --dataset ffdkj --accept-large-change
-      - run: uv run danbooru-tag-zh validate-artifacts --dataset ffdkj
-      - uses: actions/upload-artifact@v4
-        with:
-          name: danbooru-tag-zh-datasets
-          if-no-files-found: error
-          path: |
-            artifacts/ffdkj/zh-hans.min.json
-            artifacts/ffdkj/manifest.json
-            data/sources/ffdkj.lock.json
+      - name: Check changes
+        if: steps.candidate.outputs.changed == 'true'
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run mypy
+          uv run pytest
+          git diff --check
+      - name: Publish changed files
+        if: steps.candidate.outputs.changed == 'true'
+        env:
+          BASELINE: ${{ steps.baseline.outputs.commit }}
+        run: |
+          uv run danbooru-tag-zh check-publish-baseline --baseline "$BASELINE" --branch main
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- artifacts/ffdkj/zh-hans.min.json artifacts/ffdkj/manifest.json data/sources/ffdkj.lock.json
+          git commit -m 'data: update ffdkj translations'
+          git push origin HEAD:refs/heads/main

@@ -5,6 +5,7 @@ import json
 import logging
 from pathlib import Path
 
+from .automatic_update import check_publish_baseline, prepare_ffdkj_update
 from .candidates import build_candidates, candidate_stats
 from .config import load_config
 from .datasets import build_datasets, update_ffdkj_lock, validate_datasets
@@ -46,6 +47,8 @@ def parser() -> argparse.ArgumentParser:
             "candidate-stats",
             "review",
             "update-ffdkj",
+            "prepare-ffdkj-update",
+            "check-publish-baseline",
             "build-artifacts",
             "validate-artifacts",
             "artifact-stats",
@@ -60,6 +63,8 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--port", type=int, default=8765)
     result.add_argument("--no-browser", action="store_true")
     result.add_argument("--commit")
+    result.add_argument("--baseline", default="")
+    result.add_argument("--branch", default="main")
     result.add_argument("--dataset", choices=("all", "ffdkj", "wiki-reviewed"), default="all")
     result.add_argument("--dry-run", action="store_true")
     result.add_argument("--accept-large-change", action="store_true")
@@ -107,6 +112,11 @@ def run(args: argparse.Namespace) -> int:
         if not candidate_database.is_file():
             raise ValueError(f"candidate database does not exist: {candidate_database}")
         result = candidate_stats(candidate_database)
+    elif args.command == "prepare-ffdkj-update":
+        result = prepare_ffdkj_update(root, config)
+    elif args.command == "check-publish-baseline":
+        check_publish_baseline(root, args.baseline, args.branch)
+        result = {"status": "baseline-unchanged"}
     elif args.command == "update-ffdkj":
         result = update_ffdkj_lock(root, config, commit=args.commit)
     elif args.command == "build-artifacts":

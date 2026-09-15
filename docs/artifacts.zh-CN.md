@@ -39,6 +39,16 @@ uv run danbooru-tag-zh artifact-stats
 
 ## GitHub Actions
 
-`.github/workflows/build-artifacts.yml` 是手动触发的构建流程。它可以使用 ffdkj 最新 commit 或指定 commit，验证后上传 ffdkj Actions artifact，不会自动提交文件或创建 GitHub Release。
+`.github/workflows/build-artifacts.yml` 每天北京时间 04:17 运行，也可以从 `main` 手动触发。部署到 GitHub 且具备仓库写入权限后，会自动提交并推送通过检查的 ffdkj 更新，不创建 GitHub Release。定时运行可能延迟。
 
-`wiki-reviewed` 仍在本地审核，不会由工作流上传。
+工作流先解析上游 commit，与已发布 source lock 相同时跳过。否则在临时目录构建，复用现有校验，与当前已发布 JSON 比较。基线缺失、损坏或为空，候选无效或为空，以及删除或改译超限都会停止更新。`config/default.toml` 中的初始保守门槛为删除 0.5%、修改 1%，均以旧词库总数为分母，后续根据实际更新历史调整。新增数量仅统计，不独立阻断。自动流程不使用 `--accept-large-change`。
+
+内容没有变化时不修改任何发布文件，包括 source lock，因此上游新 commit 产生相同内容时，下次可能再次检查。校验和测试通过后，只提交 JSON、manifest 和 source lock；若远端 `main` 在检出后发生变化，则停止发布，留待后续运行，不自动 rebase 或强推。CDN 缓存可能暂时继续返回旧版。
+
+本地准备更新、不提交或推送：
+
+```powershell
+uv run danbooru-tag-zh prepare-ffdkj-update
+```
+
+命令输出来源 commit 和更新结果，有差异统计时一并输出。失败原因写入工作流日志，候选文件不会发布。`wiki-reviewed` 不由此工作流更新。
