@@ -10,57 +10,40 @@ This document explains how `wiki-reviewed` fetches Danbooru data and creates tra
 uv run danbooru-tag-zh sync-tags
 ```
 
-The command follows ID cursor pagination through Danbooru's `/tags.json` endpoint and defaults to one request per second. It stores the Git-ignored database at `data/state/tags.sqlite`.
-
-An interrupted run resumes from `tags.sqlite.partial`. Use `--restart` to discard partial progress:
-
-```powershell
-uv run danbooru-tag-zh sync-tags --restart
-uv run danbooru-tag-zh validate-tags
-uv run danbooru-tag-zh tag-stats
-```
-
-The completed database replaces the previous version only after pagination, SQLite integrity, record-count, and category checks pass. The `tags` table stores identifiers, names, categories, post counts, timestamps, and deprecation state.
+Tags are fetched by ID from Danbooru's `/tags.json` and saved to `data/state/tags.sqlite`. Interrupted runs resume automatically; add `--restart` to start over. Run `uv run danbooru-tag-zh validate-tags` to check the completed data.
 
 ## 2. Fetch Danbooru Wiki data
 
 ```powershell
 uv run danbooru-tag-zh sync-wiki
 uv run danbooru-tag-zh validate-wiki
-uv run danbooru-tag-zh wiki-stats
 ```
 
-The sync walks public Wiki pages with an ID cursor and stores pages matching non-`artist` tags at `data/state/wiki.sqlite`. It retains the body, `other_names`, page state, source URL, and retrieval time. Interrupted runs resume automatically; `--restart` discards partial progress.
-
-Wiki content is stored as source data. It becomes a translation only after a matching rule or local review selects it.
+Public Wiki pages matching non-artist tags are saved to `data/state/wiki.sqlite` as candidate sources; Wiki content is not used directly as a translation.
 
 ## 3. Fetch Chinese Wikipedia titles
 
 ```powershell
 uv run danbooru-tag-zh sync-wikipedia
 uv run danbooru-tag-zh validate-wikipedia
-uv run danbooru-tag-zh wikipedia-stats
 ```
 
-Only `copyright` and `character` pages use Wikipedia. Links are classified from the tag name, `other_names`, and nearby relationship phrases:
+Only `copyright` and `character` use Wikipedia. Links are classified as:
 
 - `subject`: the linked page identifies the current tag.
 - `related`: the link points to source material, an adaptation source, or another related subject.
 - `unknown`: the link cannot be matched to the current tag.
 
-Only `subject` titles enter candidate generation. `related` and `unknown` links remain in the database with their context. Run with `--restart` after changing Wiki data or classification rules.
+Only `subject` Chinese titles enter candidate generation. Add `--restart` after changing Wiki data or classification rules.
 
 ## 4. Build candidates
 
 ```powershell
 uv run danbooru-tag-zh build-candidates
-uv run danbooru-tag-zh candidate-stats
 ```
 
-Candidate extraction keeps Wiki aliases containing Han characters but no Kana or Hangul. Values that OpenCC would change under `t2s` are excluded instead of being converted into new candidates. A Han-only value remains a candidate because it may still be Japanese.
+Wiki aliases must contain Han characters and no Kana or Hangul. Values changed by OpenCC `t2s` are excluded. Han-only values may still be Japanese and require review.
 
-A candidate is selected automatically when the Wiki body labels a Chinese name and uniquely matches one candidate. For `copyright` and `character`, a `subject` Wikipedia Chinese title can also select an exact match. `general` and `meta` do not use Wikipedia. Unmatched Wikipedia titles remain references.
-
-Groups with multiple candidates are written to `reports/multiple-candidates.json` in descending tag usage order.
+An explicit Chinese name in the Wiki body selects a unique matching candidate. For works and characters, a `subject` Wikipedia Chinese title can confirm an exact match. Other material remains reference data for manual review.
 
 Continue with the [manual review guide](review-guide.md).

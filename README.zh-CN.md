@@ -13,13 +13,11 @@
 | `ffdkj` | 从 ffdkj `tag.sqlite` 转换的译名 | 可用 |
 | `wiki-reviewed` | 来自 Danbooru Wiki、Wikipedia 标题和本地审核的译名 | 本地预览 |
 
-两个文件分开生成。两者都排除 `artist`，删除与原 tag 相同的译名，并将全角括号替换为英文括号。
+两套译名独立生成，排除画师标签和与原 tag 相同的译名。
 
 ## 标签范围
 
-标签清单包含 Danbooru 五个分类中 `post_count >= 10` 的标签。`general`、`copyright`、`character` 和 `meta` 参与翻译，`artist` 只保留标签数据。
-
-译名尽可能简短并记录来源；无法确定的内容不写入结果。
+标签清单来自 Danbooru 五个分类中 `post_count >= 10` 的标签；画师仅保留标签数据。无法确定的译名不写入结果。
 
 ## 快速开始
 

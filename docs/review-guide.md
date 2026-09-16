@@ -8,11 +8,11 @@ Start the local review interface:
 uv run danbooru-tag-zh review
 ```
 
-The service listens locally and saves decisions atomically to `data/manual/translations.json`. Rebuilding candidates does not overwrite this file.
+Decisions are saved in `data/manual/translations.json`; rebuilding candidates does not overwrite manual review.
 
 ## Review interface
 
-The default view shows multiple-candidate groups ordered by tag usage. Filters cover category, candidate count, review state, and tag name. Other-language aliases and unmatched Wikipedia titles appear beside the candidates for reference.
+The interface shows multiple-candidate groups by default, with filters and other-language aliases or Wikipedia titles for reference.
 
 Available actions include:
 
@@ -24,4 +24,4 @@ Available actions include:
 - mark that no suitable translation exists;
 - undo the latest decision.
 
-Use an existing Chinese name when a source provides one. Product names and titles may retain their original spelling with corrected capitalization, such as `18Trip`. Avoid explanatory text and keep translations concise.
+Prefer an existing Chinese name from a source. Proper names may keep their original spelling with common capitalization; keep translations concise.

@@ -8,9 +8,9 @@
 uv run danbooru-tag-zh update-ffdkj
 ```
 
-The command resolves upstream `main` to an immutable commit before downloading and validating `tag.sqlite`. The database stays in the Git-ignored cache. The commit, download URL, SQLite SHA-256, record count, retrieval time, and licensing links are written to `data/sources/ffdkj.lock.json`.
+Downloads and validates ffdkj `tag.sqlite`, recording the upstream commit and checksum in `data/sources/ffdkj.lock.json`. The source database is not committed.
 
-To reproduce a fixed source version:
+To use a fixed upstream version:
 
 ```powershell
 uv run danbooru-tag-zh update-ffdkj --commit <40-character commit SHA>
@@ -19,9 +19,8 @@ uv run danbooru-tag-zh update-ffdkj --commit <40-character commit SHA>
 ## Build datasets
 
 ```powershell
-uv run danbooru-tag-zh build-artifacts
-uv run danbooru-tag-zh validate-artifacts
-uv run danbooru-tag-zh artifact-stats
+uv run danbooru-tag-zh build-artifacts --dataset ffdkj
+uv run danbooru-tag-zh validate-artifacts --dataset ffdkj
 ```
 
 Artifacts are separated by source:
@@ -31,24 +30,22 @@ Artifacts are separated by source:
 | `ffdkj` | `artifacts/ffdkj/zh-hans.min.json` | Translations read from upstream `tag.sqlite` |
 | `wiki-reviewed` | `artifacts/wiki-reviewed/zh-hans.min.json` | Translations selected from Wiki data and `data/manual/translations.json` |
 
-Use `--dataset ffdkj` or `--dataset wiki-reviewed` to build one source. `--dry-run` calculates the change without writing.
+Once Wiki review data is ready, use `--dataset wiki-reviewed` for a local preview. `--dry-run` writes no files.
 
-Both conversions exclude `artist` and translations equivalent to the original tag. Fullwidth parentheses are normalized to ASCII. Values in `data/manual/translations.json` override automatically selected values in `wiki-reviewed`.
+The datasets are built separately and omit artist tags and unchanged translations. Manual translations take precedence over `wiki-reviewed` automatic candidates.
 
-Each dataset has its own `manifest.json` with source information, generation time, normalization rules, counts, and the artifact checksum. A large record decrease or translation change stops the build until the result is inspected and `--accept-large-change` is supplied.
+Each artifact has a `manifest.json` with source and validation details. Large deletions or changes stop the build; use `--accept-large-change` only after reviewing the result.
 
 ## GitHub Actions
 
-`.github/workflows/build-artifacts.yml` runs daily at 04:17 Beijing time and can also be started manually from `main`. Once deployed to GitHub with repository write permission, it automatically commits and pushes validated ffdkj updates; it does not create a GitHub Release. Scheduled runs may be delayed.
+The workflow checks for ffdkj updates daily at 04:17 Beijing time and can be run manually from `main`. When changes pass validation and tests, it commits only the ffdkj JSON, manifest, and source lock. `wiki-reviewed` is not published automatically, and no GitHub Release is created.
 
-The workflow resolves the upstream commit and skips it when it matches the published source lock. Otherwise, it builds in a temporary directory and compares against the currently published JSON using the existing validation. Missing, invalid or empty baselines, invalid or empty candidates, and excessive deletions or translation changes stop the update. The initial conservative limits in `config/default.toml` are 0.5% deleted and 1% modified, each relative to the previous total; adjust them using observed update history. Additions are counted but do not independently block publication. The automatic workflow never uses `--accept-large-change`.
+Automatic publication stops if the baseline or candidate is invalid, translations deleted exceed 0.5%, translations changed exceed 1%, or remote `main` has moved. The workflow does not bypass these limits.
 
-Unchanged content leaves all published files untouched, including the source lock. A new upstream commit with identical content may therefore be checked again on the next run. Changes that pass validation and tests update only the JSON, manifest and source lock. If remote `main` has moved since checkout, publication stops until a later run; there is no automatic rebase or force push. CDN caches may continue serving the previous version for a while.
-
-For local preparation without committing or pushing:
+To preview an update locally:
 
 ```powershell
 uv run danbooru-tag-zh prepare-ffdkj-update
 ```
 
-This prints the source commit and update result, including change counts when available. Failures are reported in the workflow log and do not publish candidate files. `wiki-reviewed` is not updated by this workflow.
+The command prepares and validates ffdkj changes without committing or pushing.

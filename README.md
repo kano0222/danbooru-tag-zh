@@ -11,13 +11,11 @@ Fetches Danbooru tags and builds Simplified Chinese tag files for web clients su
 | `ffdkj` | Translations converted from ffdkj `tag.sqlite` | Available |
 | `wiki-reviewed` | Names from Danbooru Wiki, Wikipedia titles, and local review | Local preview |
 
-The two files remain separate. Both exclude `artist`, omit values equal to the original tag, and replace fullwidth parentheses with ASCII parentheses.
+The datasets are built separately and omit artist tags and translations identical to the original tag.
 
 ## Tag scope
 
-The inventory contains Danbooru tags with `post_count >= 10` from all five categories. `general`, `copyright`, `character`, and `meta` are translation targets. `artist` is retained only as tag data.
-
-Translations are kept short and record their source. Entries without a clear translation are omitted.
+The inventory contains Danbooru tags with `post_count >= 10` from all five categories; artist tags remain inventory data only. Entries without a clear translation are omitted.
 
 ## Quick start
 
