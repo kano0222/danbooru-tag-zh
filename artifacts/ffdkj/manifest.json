@@ -1,26 +1,26 @@
 {
   "artifacts": {
     "zh-hans.min.json": {
-      "sha256": "d8d6df8f00f120e277ca597ab5daecbdbc70fe593656028a7760857067d148e8",
-      "size": 8111108
+      "sha256": "965adc01119f190f4c77f5d3a02ab3874d61e909bf56640771fbdaf7074f1bbb",
+      "size": 8116140
     }
   },
   "dataset": "ffdkj",
-  "generated_at": "2026-09-19T22:21:04.685475Z",
+  "generated_at": "2026-09-20T22:31:03.125190Z",
   "normalizations": [
     "fullwidth_parentheses_to_ascii"
   ],
   "records": {
     "by_category": {
-      "character": 102957,
-      "copyright": 19961,
-      "general": 52551,
-      "meta": 740
+      "character": 103013,
+      "copyright": 19975,
+      "general": 52576,
+      "meta": 742
     },
-    "excluded_artist": 152469,
-    "excluded_unchanged": 249,
-    "source_total": 328927,
-    "total": 176209
+    "excluded_artist": 152540,
+    "excluded_unchanged": 251,
+    "source_total": 329097,
+    "total": 176306
   },
   "schema_version": 1,
   "source": {
@@ -31,12 +31,12 @@
     },
     "upstream": {
       "branch": "main",
-      "commit": "188916774d475268329b63d6b4f759c5b48ce696",
-      "download_url": "https://raw.githubusercontent.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table/188916774d475268329b63d6b4f759c5b48ce696/tag.sqlite",
+      "commit": "ebd0bf2aee0634f6783dcf95727bb7abb3782005",
+      "download_url": "https://raw.githubusercontent.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table/ebd0bf2aee0634f6783dcf95727bb7abb3782005/tag.sqlite",
       "repository": "ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table",
-      "retrieved_at": "2026-09-19T22:20:57.173798Z",
-      "sqlite_sha256": "0c8661d1cdd7962b16985d01669ff36177aefbc24386be3f325f32366ad07e47",
-      "sqlite_size": 24252416
+      "retrieved_at": "2026-09-20T22:30:55.758730Z",
+      "sqlite_sha256": "e67885fb8ffb0b197de87c90f4f1928a4f44849dd02f5735ce06f796685cc26a",
+      "sqlite_size": 24309760
     }
   }
 }
