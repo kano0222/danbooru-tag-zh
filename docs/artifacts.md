@@ -10,6 +10,8 @@ uv run danbooru-tag-zh update-ffdkj
 
 Downloads and validates ffdkj `tag.sqlite`, recording the upstream commit and checksum in `data/sources/ffdkj.lock.json`. The source database is not committed.
 
+Set the optional `GITHUB_TOKEN` environment variable to authenticate upstream commit queries and reduce GitHub API rate-limit failures. The token is sent only to the GitHub API; Actions supplies it automatically.
+
 To use a fixed upstream version:
 
 ```powershell

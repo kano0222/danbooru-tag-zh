@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import tempfile
 from datetime import UTC, datetime
 from email.message import Message
@@ -39,9 +40,9 @@ class HttpResponse(BinaryReader, Protocol):
     ) -> None: ...
 
 
-def _request(url: str, timeout: float) -> HttpResponse:
+def _request(url: str, timeout: float, *, headers: dict[str, str] | None = None) -> HttpResponse:
     try:
-        request = Request(url, headers={"User-Agent": USER_AGENT})  # noqa: S310
+        request = Request(url, headers={"User-Agent": USER_AGENT, **(headers or {})})  # noqa: S310
         response = urlopen(request, timeout=timeout)  # noqa: S310
         return cast(HttpResponse, response)
     except (HTTPError, URLError, TimeoutError) as exc:
@@ -52,7 +53,9 @@ def resolve_commit(config: SourceConfig) -> str:
     repository = quote(config.repository, safe="/")
     branch = quote(config.branch, safe="")
     url = f"https://api.github.com/repos/{repository}/commits/{branch}"
-    with _request(url, config.timeout_seconds) as response:
+    token = os.environ.get("GITHUB_TOKEN")
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+    with _request(url, config.timeout_seconds, headers=headers) as response:
         payload = json.load(response)
     commit = payload.get("sha") if isinstance(payload, dict) else None
     if not isinstance(commit, str) or len(commit) != 40:

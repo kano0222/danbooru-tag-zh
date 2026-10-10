@@ -10,6 +10,8 @@ uv run danbooru-tag-zh update-ffdkj
 
 下载并验证 ffdkj `tag.sqlite`，将上游 commit 和校验信息记录在 `data/sources/ffdkj.lock.json`。原始数据库不进入 Git。
 
+可设置环境变量 `GITHUB_TOKEN`，为上游提交查询提供认证，减少 GitHub API 限流导致的失败。令牌仅发送给 GitHub API；Actions 工作流自动提供该令牌。
+
 使用指定上游版本：
 
 ```powershell
