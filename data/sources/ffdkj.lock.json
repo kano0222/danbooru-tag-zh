@@ -8,11 +8,11 @@
   "schema_version": 1,
   "source": {
     "branch": "main",
-    "commit": "1ce174de7122a9f82f7d18a6687c9a602716db1c",
-    "download_url": "https://raw.githubusercontent.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table/1ce174de7122a9f82f7d18a6687c9a602716db1c/tag.sqlite",
+    "commit": "623a41c0ba1ea8b7be0ccf7cc925b15f8ec77222",
+    "download_url": "https://raw.githubusercontent.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table/623a41c0ba1ea8b7be0ccf7cc925b15f8ec77222/tag.sqlite",
     "repository": "ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table",
-    "retrieved_at": "2026-10-10T23:37:51.392037Z",
-    "sqlite_sha256": "a6628c66328c6a648e8b456b36a0fffd22a5bf0e237c1f9799532bec0da68092",
-    "sqlite_size": 24530944
+    "retrieved_at": "2026-10-11T23:43:34.364747Z",
+    "sqlite_sha256": "876ee9885218a7c1dbf7c879ef7b3339024eb47b3f9e8b98fbb77af16897a2bb",
+    "sqlite_size": 24678400
   }
 }
