@@ -4,15 +4,15 @@
     "spdx_id": "MIT",
     "url": "https://github.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table/blob/main/LICENSE"
   },
-  "records": 337578,
+  "records": 337778,
   "schema_version": 1,
   "source": {
     "branch": "main",
-    "commit": "2328444dd2665a921ba74372d13c936b986eed07",
-    "download_url": "https://raw.githubusercontent.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table/2328444dd2665a921ba74372d13c936b986eed07/tag.sqlite",
+    "commit": "51dcc274e51b47dde9f55c26e34545bf59c91444",
+    "download_url": "https://raw.githubusercontent.com/ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table/51dcc274e51b47dde9f55c26e34545bf59c91444/tag.sqlite",
     "repository": "ffdkj/ffdkj-Danbooru_Tag-Chinese-English-Translation-Table",
-    "retrieved_at": "2026-11-18T02:27:41.467548Z",
-    "sqlite_sha256": "ac0304a89e34d23aed16c1e582e8baf565b15237af03ff6e18c03cd8fe05d722",
+    "retrieved_at": "2026-11-19T01:53:55.794329Z",
+    "sqlite_sha256": "b163166ab37d6e7e871dad40be5cc8896c6629c47d71cf6378b2e5848336ac5e",
     "sqlite_size": 24993792
   }
 }
